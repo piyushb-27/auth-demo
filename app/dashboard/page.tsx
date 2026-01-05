@@ -2,6 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
+import { motion } from 'framer-motion';
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -23,44 +24,84 @@ export default function DashboardPage() {
   return (
     <div className="min-h-screen bg-black">
       {/* Header */}
-      <header className="border-b border-neutral-800">
+      <motion.header 
+        initial={{ y: -20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.5 }}
+        className="border-b border-neutral-800"
+      >
         <div className="max-w-5xl mx-auto px-6 py-4 flex justify-between items-center">
           <div className="text-white font-semibold">Dashboard</div>
-          <button
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
             onClick={handleLogout}
             disabled={loading}
             className="px-4 py-2 text-sm text-gray-400 hover:text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loading ? 'Logging out...' : 'Logout'}
-          </button>
+          </motion.button>
         </div>
-      </header>
+      </motion.header>
 
       {/* Main Content */}
       <main className="max-w-5xl mx-auto px-6 py-20">
-        <div className="text-center space-y-4">
-          <h1 className="text-6xl font-bold text-white tracking-tight">
+        <motion.div 
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2, duration: 0.6 }}
+          className="text-center space-y-4"
+        >
+          <motion.h1 
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.3, duration: 0.6, type: "spring" }}
+            className="text-6xl font-bold text-white tracking-tight"
+          >
             Hello World
-          </h1>
-          <p className="text-gray-400 text-lg">
+          </motion.h1>
+          <motion.p 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.5, duration: 0.5 }}
+            className="text-gray-400 text-lg"
+          >
             Welcome to your dashboard
-          </p>
-        </div>
+          </motion.p>
+        </motion.div>
 
         {/* Optional: Add some cards or content */}
         <div className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="p-6 bg-neutral-900 border border-neutral-800 rounded-lg">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.6, duration: 0.5 }}
+            whileHover={{ scale: 1.05, borderColor: "rgb(64, 64, 64)" }}
+            className="p-6 bg-neutral-900 border border-neutral-800 rounded-lg transition-all"
+          >
             <h3 className="text-white font-medium mb-2">Getting Started</h3>
             <p className="text-gray-400 text-sm">Welcome to your new dashboard. Start building something amazing.</p>
-          </div>
-          <div className="p-6 bg-neutral-900 border border-neutral-800 rounded-lg">
+          </motion.div>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.7, duration: 0.5 }}
+            whileHover={{ scale: 1.05, borderColor: "rgb(64, 64, 64)" }}
+            className="p-6 bg-neutral-900 border border-neutral-800 rounded-lg transition-all"
+          >
             <h3 className="text-white font-medium mb-2">Your Profile</h3>
             <p className="text-gray-400 text-sm">Manage your account settings and preferences here.</p>
-          </div>
-          <div className="p-6 bg-neutral-900 border border-neutral-800 rounded-lg">
+          </motion.div>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.8, duration: 0.5 }}
+            whileHover={{ scale: 1.05, borderColor: "rgb(64, 64, 64)" }}
+            className="p-6 bg-neutral-900 border border-neutral-800 rounded-lg transition-all"
+          >
             <h3 className="text-white font-medium mb-2">Resources</h3>
             <p className="text-gray-400 text-sm">Access documentation and helpful guides to get the most out of your account.</p>
-          </div>
+          </motion.div>
         </div>
       </main>
     </div>
