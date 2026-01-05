@@ -4,6 +4,8 @@ import { useState, FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
+import ThemeToggle from '../components/ThemeToggle';
+import { useTheme } from '../components/ThemeProvider';
 
 export default function SignupPage() {
   const [email, setEmail] = useState('');
@@ -11,6 +13,17 @@ export default function SignupPage() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
+
+  const containerBg = isDark ? 'bg-black text-white' : 'bg-gray-50 text-gray-900';
+  const cardBg = isDark ? 'bg-neutral-950/80 border-neutral-800' : 'bg-white border-gray-200 shadow-sm';
+  const inputStyles = isDark
+    ? 'bg-neutral-900 border border-neutral-800 text-white placeholder-gray-500'
+    : 'bg-white border border-gray-300 text-gray-900 placeholder-gray-500';
+  const buttonStyles = isDark
+    ? 'bg-white text-black hover:bg-gray-100'
+    : 'bg-black text-white hover:bg-gray-900';
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -40,12 +53,13 @@ export default function SignupPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-black">
+    <div className={`min-h-screen flex items-center justify-center px-4 sm:px-6 ${containerBg} relative`}>
+      <ThemeToggle />
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="w-full max-w-sm"
+        className={`w-full max-w-sm rounded-xl border ${cardBg} p-6 sm:p-8 backdrop-blur`}
       >
         <motion.div 
           initial={{ opacity: 0 }}
@@ -53,8 +67,8 @@ export default function SignupPage() {
           transition={{ delay: 0.2, duration: 0.5 }}
           className="mb-8"
         >
-          <h1 className="text-2xl font-semibold text-white mb-1">Create account</h1>
-          <p className="text-sm text-gray-400">Get started with your account</p>
+          <h1 className={`text-2xl font-semibold mb-1 ${isDark ? 'text-white' : 'text-gray-900'}`}>Create account</h1>
+          <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>Get started with your account</p>
         </motion.div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -72,7 +86,7 @@ export default function SignupPage() {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-4 py-3 bg-neutral-900 border border-neutral-800 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-neutral-700 focus:scale-[1.02] transition-all duration-200"
+                className={`w-full px-4 py-3 rounded-lg focus:outline-none focus:scale-[1.02] focus:border-neutral-700 transition-all duration-200 ${inputStyles}`}
                 placeholder="Email"
               />
             </div>
@@ -84,7 +98,7 @@ export default function SignupPage() {
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-4 py-3 bg-neutral-900 border border-neutral-800 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-neutral-700 focus:scale-[1.02] transition-all duration-200"
+                className={`w-full px-4 py-3 rounded-lg focus:outline-none focus:scale-[1.02] focus:border-neutral-700 transition-all duration-200 ${inputStyles}`}
                 placeholder="Password"
               />
               <p className="mt-2 text-xs text-gray-500 px-1">
@@ -97,7 +111,7 @@ export default function SignupPage() {
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
-              className="text-red-400 text-sm px-1"
+              className="text-red-500 text-sm px-1"
             >
               {error}
             </motion.div>
@@ -111,7 +125,7 @@ export default function SignupPage() {
             transition={{ delay: 0.4, duration: 0.5 }}
             type="submit"
             disabled={loading}
-            className="w-full py-3 bg-white text-black rounded-lg font-medium hover:bg-gray-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className={`w-full py-3 rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${buttonStyles}`}
           >
             {loading ? 'Creating account...' : 'Sign up'}
           </motion.button>
@@ -122,8 +136,8 @@ export default function SignupPage() {
             transition={{ delay: 0.5, duration: 0.5 }}
             className="text-center text-sm pt-2"
           >
-            <span className="text-gray-400">Already have an account? </span>
-            <Link href="/login" className="text-white hover:underline transition-all">
+            <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>Already have an account? </span>
+            <Link href="/login" className={isDark ? 'text-white hover:underline transition-all' : 'text-black hover:underline transition-all'}>
               Sign in
             </Link>
           </motion.div>
