@@ -3,12 +3,13 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import connectDB from '@/lib/mongodb';
 import User from '@/models/User';
+import OTP from '@/models/OTP';
 
 const JWT_SECRET = process.env.JWT_SECRET!;
 
 export async function POST(request: NextRequest) {
   try {
-    const { email, password } = await request.json();
+    const { email, password, fullName = '', mobileNumber = '' } = await request.json();
 
     if (!email || !password) {
       return NextResponse.json(
@@ -35,6 +36,25 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Ensure OTP was verified for this email and not expired
+    const otpRecord = await OTP.findOne({ email: email.toLowerCase().trim() });
+    if (!otpRecord || !otpRecord.verified) {
+      return NextResponse.json(
+        { error: 'Email not verified. Please verify OTP first.' },
+        { status: 400 }
+      );
+    }
+
+    // Extra guard for TTL expiry (cleanup handled by index too)
+    const fiveMinutesAgo = Date.now() - 5 * 60 * 1000;
+    if (otpRecord.createdAt.getTime() < fiveMinutesAgo) {
+      await OTP.deleteOne({ _id: otpRecord._id });
+      return NextResponse.json(
+        { error: 'OTP expired. Please request a new code.' },
+        { status: 400 }
+      );
+    }
+
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
 
@@ -42,7 +62,12 @@ export async function POST(request: NextRequest) {
     const user = await User.create({
       email,
       password: hashedPassword,
+      fullName,
+      mobileNumber,
     });
+
+    // Consume OTP (delete after successful signup)
+    await OTP.deleteOne({ _id: otpRecord._id });
 
     // Create JWT token
     const token = jwt.sign(

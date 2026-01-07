@@ -53,6 +53,7 @@ export default function LoginPage() {
     }
   };
 
+
   return (
     <div className={`min-h-screen flex items-center justify-center px-4 sm:px-6 ${containerBg} relative`}>
       <FloatingGradients />
@@ -71,8 +72,8 @@ export default function LoginPage() {
         >
           <h1 className={`text-2xl font-semibold mb-1 ${isDark ? 'text-white' : 'text-gray-900'}`}>Welcome back</h1>
           <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>Sign in to continue</p>
+          {/* Password-only login */}
         </motion.div>
-
         <form onSubmit={handleSubmit} className="space-y-4">
           <motion.div 
             initial={{ opacity: 0, x: -20 }}
