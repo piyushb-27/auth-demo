@@ -22,8 +22,8 @@ export default function DashboardPage() {
   const isDark = theme === 'dark';
   const bg = isDark ? 'bg-black text-white' : 'bg-white text-gray-900';
   const cardBg = isDark
-    ? 'bg-neutral-900 border border-neutral-800'
-    : 'bg-white border border-gray-200 shadow-sm';
+    ? 'bg-neutral-900/60 border border-neutral-800'
+    : 'bg-white/60 border border-gray-200 shadow-sm';
   const subtext = isDark ? 'text-gray-400' : 'text-gray-600';
 
   const handleLogout = async () => {
@@ -97,7 +97,7 @@ export default function DashboardPage() {
       </motion.header>
 
       {/* Main Content */}
-      <main className="max-w-5xl mx-auto px-6 py-20">
+      <main className="max-w-5xl mx-auto px-6 py-20 relative z-10">
         <motion.div 
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
@@ -123,7 +123,7 @@ export default function DashboardPage() {
         </motion.div>
 
         {/* Optional: Add some cards or content */}
-        <div className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-4 relative z-10">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -141,15 +141,15 @@ export default function DashboardPage() {
             whileHover={{ scale: 1.05, borderColor: "rgb(64, 64, 64)" }}
             className={`p-6 rounded-lg transition-all ${cardBg}`}
           >
-            <div className="flex items-center gap-4">
-              <div className="h-14 w-14 rounded-full overflow-hidden border border-dashed border-gray-300 dark:border-neutral-700 grid place-items-center bg-gradient-to-br from-gray-100 to-gray-200 dark:from-neutral-900 dark:to-neutral-800">
+            <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4">
+              <div className="h-16 w-16 sm:h-14 sm:w-14 rounded-full overflow-hidden border border-dashed border-gray-300 dark:border-neutral-700 grid place-items-center bg-gradient-to-br from-gray-100 to-gray-200 dark:from-neutral-900 dark:to-neutral-800 flex-shrink-0">
                 {profile.profilePictureUrl ? (
                   <img src={profile.profilePictureUrl} alt="Profile" className="h-full w-full object-cover" />
                 ) : (
-                  <span className="text-xl font-semibold text-gray-600 dark:text-gray-300">{avatarLetter}</span>
+                  <span className="text-2xl sm:text-xl font-semibold text-gray-600 dark:text-gray-300">{avatarLetter}</span>
                 )}
               </div>
-              <div className="flex-1">
+              <div className="flex-1 text-center sm:text-left">
                 <h3 className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
                   {profileLoading ? 'Loading...' : profile.fullName || 'Add your name'}
                 </h3>
@@ -158,7 +158,7 @@ export default function DashboardPage() {
                 </p>
               </div>
             </div>
-            {profileError && <p className="text-xs text-red-500 mt-2">{profileError}</p>}
+            {profileError && <p className="text-xs text-red-500 mt-2 text-center">{profileError}</p>}
             <motion.button
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
