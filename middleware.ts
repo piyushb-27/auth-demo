@@ -20,7 +20,7 @@ export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // Protected routes that require authentication
-  if (pathname.startsWith('/dashboard')) {
+  if (pathname.startsWith('/dashboard') || pathname.startsWith('/profile')) {
     if (!token || !(await verifyToken(token))) {
       return NextResponse.redirect(new URL('/login', request.url));
     }
@@ -45,5 +45,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/', '/dashboard/:path*', '/login', '/signup'],
+  matcher: ['/', '/dashboard/:path*', '/profile', '/login', '/signup'],
 };

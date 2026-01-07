@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import ThemeToggle from '../components/ThemeToggle';
 import { useTheme } from '../components/ThemeProvider';
@@ -9,6 +9,14 @@ import { useTheme } from '../components/ThemeProvider';
 export default function DashboardPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [profileLoading, setProfileLoading] = useState(true);
+  const [profileError, setProfileError] = useState('');
+  const [profile, setProfile] = useState({
+    fullName: '',
+    mobileNumber: '',
+    profilePictureUrl: '',
+    email: '',
+  });
   const { theme } = useTheme();
   const isDark = theme === 'dark';
   const bg = isDark ? 'bg-black text-white' : 'bg-white text-gray-900';
@@ -29,6 +37,38 @@ export default function DashboardPage() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const res = await fetch('/api/user/profile');
+        if (!res.ok) {
+          setProfileError('Unable to load profile');
+          setProfileLoading(false);
+          return;
+        }
+        const data = await res.json();
+        setProfile({
+          fullName: data.fullName || '',
+          mobileNumber: data.mobileNumber || '',
+          profilePictureUrl: data.profilePictureUrl || '',
+          email: data.email || '',
+        });
+      } catch (error) {
+        setProfileError('Unable to load profile');
+      } finally {
+        setProfileLoading(false);
+      }
+    };
+
+    fetchProfile();
+  }, []);
+
+  const avatarLetter = useMemo(() => {
+    if (profile.fullName) return profile.fullName.charAt(0).toUpperCase();
+    if (profile.email) return profile.email.charAt(0).toUpperCase();
+    return '?';
+  }, [profile.fullName, profile.email]);
 
   return (
     <div className={`min-h-screen ${bg} relative`}>
@@ -99,8 +139,32 @@ export default function DashboardPage() {
             whileHover={{ scale: 1.05, borderColor: "rgb(64, 64, 64)" }}
             className={`p-6 rounded-lg transition-all ${cardBg}`}
           >
-            <h3 className={`font-medium mb-2 ${isDark ? 'text-white' : 'text-gray-900'}`}>Your Profile</h3>
-            <p className={`${subtext} text-sm`}>Manage your account settings and preferences here.</p>
+            <div className="flex items-center gap-4">
+              <div className="h-14 w-14 rounded-full overflow-hidden border border-dashed border-gray-300 dark:border-neutral-700 grid place-items-center bg-gradient-to-br from-gray-100 to-gray-200 dark:from-neutral-900 dark:to-neutral-800">
+                {profile.profilePictureUrl ? (
+                  <img src={profile.profilePictureUrl} alt="Profile" className="h-full w-full object-cover" />
+                ) : (
+                  <span className="text-xl font-semibold text-gray-600 dark:text-gray-300">{avatarLetter}</span>
+                )}
+              </div>
+              <div className="flex-1">
+                <h3 className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                  {profileLoading ? 'Loading...' : profile.fullName || 'Add your name'}
+                </h3>
+                <p className={`${subtext} text-sm`}>
+                  {profileLoading ? 'Fetching details' : profile.mobileNumber || 'Add a mobile number'}
+                </p>
+              </div>
+            </div>
+            {profileError && <p className="text-xs text-red-500 mt-2">{profileError}</p>}
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={() => router.push('/profile')}
+              className={`mt-4 w-full py-2 rounded-lg text-sm font-medium transition-colors ${isDark ? 'bg-white text-black hover:bg-gray-100' : 'bg-black text-white hover:bg-gray-900'}`}
+            >
+              Edit Profile
+            </motion.button>
           </motion.div>
           <motion.div
             initial={{ opacity: 0, y: 20 }}

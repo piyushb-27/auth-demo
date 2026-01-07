@@ -3,6 +3,9 @@ import mongoose, { Schema, Document, Model } from 'mongoose';
 export interface IUser extends Document {
   email: string;
   password: string;
+  fullName?: string;
+  mobileNumber?: string;
+  profilePictureUrl?: string;
   createdAt: Date;
 }
 
@@ -18,6 +21,21 @@ const UserSchema: Schema<IUser> = new Schema({
     type: String,
     required: [true, 'Password is required'],
     minlength: [6, 'Password must be at least 6 characters'],
+  },
+  fullName: {
+    type: String,
+    default: '',
+    trim: true,
+  },
+  mobileNumber: {
+    type: String,
+    default: '',
+    trim: true,
+  },
+  profilePictureUrl: {
+    type: String,
+    default: '',
+    trim: true,
   },
   createdAt: {
     type: Date,
