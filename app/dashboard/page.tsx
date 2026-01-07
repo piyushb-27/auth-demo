@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import ThemeToggle from '../components/ThemeToggle';
+import FloatingGradients from '../components/FloatingGradients';
 import { useTheme } from '../components/ThemeProvider';
 
 export default function DashboardPage() {
@@ -72,6 +73,7 @@ export default function DashboardPage() {
 
   return (
     <div className={`min-h-screen ${bg} relative`}>
+      <FloatingGradients />
       <ThemeToggle />
       {/* Header */}
       <motion.header 

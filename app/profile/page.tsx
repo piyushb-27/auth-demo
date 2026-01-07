@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import ThemeToggle from '../components/ThemeToggle';
+import FloatingGradients from '../components/FloatingGradients';
 import { useTheme } from '../components/ThemeProvider';
 
 const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
@@ -181,6 +182,7 @@ export default function ProfilePage() {
 
   return (
     <div className={`min-h-screen flex items-center justify-center px-4 sm:px-6 ${bg} relative`}>
+      <FloatingGradients />
       <ThemeToggle />
       <motion.div
         initial={{ opacity: 0, y: 20 }}

@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import ThemeToggle from '../components/ThemeToggle';
+import FloatingGradients from '../components/FloatingGradients';
 import { useTheme } from '../components/ThemeProvider';
 
 export default function SignupPage() {
@@ -17,7 +18,7 @@ export default function SignupPage() {
   const isDark = theme === 'dark';
 
   const containerBg = isDark ? 'bg-black text-white' : 'bg-gray-50 text-gray-900';
-  const cardBg = isDark ? 'bg-neutral-950/80 border-neutral-800' : 'bg-white border-gray-200 shadow-sm';
+  const cardBg = isDark ? 'bg-neutral-950/40 border border-neutral-800' : 'bg-white/60 border border-gray-200 shadow-sm';
   const inputStyles = isDark
     ? 'bg-neutral-900 border border-neutral-800 text-white placeholder-gray-500'
     : 'bg-white border border-gray-300 text-gray-900 placeholder-gray-500';
@@ -54,6 +55,7 @@ export default function SignupPage() {
 
   return (
     <div className={`min-h-screen flex items-center justify-center px-4 sm:px-6 ${containerBg} relative`}>
+      <FloatingGradients />
       <ThemeToggle />
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
