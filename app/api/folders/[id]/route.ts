@@ -26,7 +26,7 @@ function verifyToken(request: NextRequest): { userId: string } | null {
 // PUT /api/folders/[id] - Update folder
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const auth = verifyToken(request);
@@ -40,7 +40,7 @@ export async function PUT(
 
     await connectDB();
 
-    const { id } = params;
+    const { id } = await params;
 
     // Validate ObjectId
     if (!mongoose.Types.ObjectId.isValid(id)) {
@@ -106,7 +106,7 @@ export async function PUT(
 // DELETE /api/folders/[id] - Delete folder
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const auth = verifyToken(request);
@@ -120,7 +120,7 @@ export async function DELETE(
 
     await connectDB();
 
-    const { id } = params;
+    const { id } = await params;
 
     // Validate ObjectId
     if (!mongoose.Types.ObjectId.isValid(id)) {
