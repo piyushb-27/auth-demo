@@ -112,7 +112,7 @@ export default function SignupPage() {
         setLoading(false);
         return;
       }
-      router.push('/dashboard');
+      router.push('/profile');
     } catch (e) {
       setError('Something went wrong. Please try again.');
     } finally {

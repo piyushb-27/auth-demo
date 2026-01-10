@@ -46,7 +46,7 @@ export default function LoginPage() {
         return;
       }
 
-      router.push('/dashboard');
+      router.push('/notes');
     } catch (err) {
       setError('Something went wrong. Please try again.');
       setLoading(false);
