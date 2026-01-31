@@ -3,9 +3,11 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
+import { ArrowLeft, Upload, Leaf } from 'lucide-react';
 import ThemeToggle from '../components/ThemeToggle';
-import FloatingGradients from '../components/FloatingGradients';
+import BotanicalGradients from '../components/BotanicalGradients';
 import { useTheme } from '../components/ThemeProvider';
+import { pageVariants, buttonAnimation, transitions } from '@/lib/animations';
 
 const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
 const uploadPreset = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET || 'unsigned';
@@ -162,7 +164,7 @@ export default function ProfilePage() {
         mobileNumber: data.mobileNumber || prev.mobileNumber,
         profilePictureUrl: data.profilePictureUrl || prev.profilePictureUrl,
       }));
-      setStatus({ type: 'success', message: 'Profile saved.' });
+      setStatus({ type: 'success', message: 'Profile preserved.' });
     } catch (error) {
       setStatus({ type: 'error', message: 'Something went wrong. Please try again.' });
     } finally {
@@ -170,136 +172,148 @@ export default function ProfilePage() {
     }
   };
 
-  const bg = isDark ? 'bg-black text-white' : 'bg-gray-50 text-gray-900';
-  const cardBg = isDark ? 'bg-neutral-950/80 border-neutral-800' : 'bg-white border-gray-200 shadow-sm';
-  const inputStyles = isDark
-    ? 'bg-neutral-900 border border-neutral-800 text-white placeholder-gray-500'
-    : 'bg-white border border-gray-300 text-gray-900 placeholder-gray-500';
-  const buttonStyles = isDark
-    ? 'bg-white text-black hover:bg-gray-100'
-    : 'bg-black text-white hover:bg-gray-900';
-  const subtext = isDark ? 'text-gray-400' : 'text-gray-600';
-
   return (
-    <div className={`min-h-screen flex items-center justify-center px-4 sm:px-6 ${bg} relative`}>
-      <FloatingGradients />
+    <div className={`min-h-screen flex items-center justify-center px-4 sm:px-6 relative ${isDark ? 'bg-[#1A1F1C]' : 'bg-[#F9F8F4]'}`}>
+      <BotanicalGradients />
       <ThemeToggle />
+      
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className={`w-full max-w-xl rounded-xl border ${cardBg} p-6 sm:p-8 backdrop-blur relative z-10`}
+        variants={pageVariants}
+        initial="initial"
+        animate="enter"
+        className={`w-full max-w-xl relative z-10`}
       >
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.2, duration: 0.5 }}
-          className="mb-8 flex items-start justify-between gap-4"
-        >
-          <div>
-            <h1 className={`text-2xl font-semibold mb-1 ${isDark ? 'text-white' : 'text-gray-900'}`}>Profile</h1>
-            <p className={`text-sm ${subtext}`}>Update your details and avatar</p>
+        {/* Decorative Arch */}
+        <div className={`h-20 rounded-t-[80px] mb-[-1px] ${isDark ? 'bg-[#242B26]' : 'bg-[#DCCFC2]/40'}`}>
+          <div className="h-full w-full flex items-center justify-center">
+            <motion.div
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ delay: 0.15, ...transitions.normal }}
+              className="text-3xl"
+            >
+              🪴
+            </motion.div>
           </div>
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            className={`hidden sm:inline-flex px-4 py-2 rounded-lg text-sm font-medium border transition-colors ${isDark ? 'border-neutral-800 hover:border-neutral-600' : 'border-gray-200 hover:border-gray-300'}`}
-            onClick={() => router.push('/dashboard')}
-          >
-            Back
-          </motion.button>
-        </motion.div>
+        </div>
 
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.25, duration: 0.5 }}
-          className="flex flex-col sm:flex-row items-center sm:items-start gap-6 mb-8"
-        >
-          <div className="flex flex-col items-center gap-3">
-            <div className="h-24 w-24 rounded-full overflow-hidden border border-dashed border-gray-300 dark:border-neutral-700 grid place-items-center bg-gradient-to-br from-gray-100 to-gray-200 dark:from-neutral-900 dark:to-neutral-800">
-              {profile.profilePictureUrl ? (
-                <img
-                  src={profile.profilePictureUrl}
-                  alt="Profile"
-                  className="h-full w-full object-cover"
-                />
-              ) : (
-                <span className="text-3xl font-semibold text-gray-600 dark:text-gray-300">{avatarLetter}</span>
-              )}
+        {/* Card */}
+        <div className={`${isDark ? 'bg-[#242B26]/80' : 'bg-white/80'} backdrop-blur-sm border ${isDark ? 'border-[#E6E2DA]/20' : 'border-[#E6E2DA]'} rounded-b-3xl p-8 shadow-lift`}>
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.1, ...transitions.normal }}
+            className="mb-8 flex items-start justify-between gap-4"
+          >
+            <div>
+              <h1 className={`font-serif text-2xl mb-1 ${isDark ? 'text-[#F9F8F4]' : 'text-[#2D3A31]'}`}>
+                Your <em className="italic">Profile</em>
+              </h1>
+              <p className={`font-sans text-sm ${isDark ? 'text-[#8C9A84]' : 'text-[#8C9A84]'}`}>Update your details and avatar</p>
             </div>
             <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              onClick={openUploadWidget}
-              className={`px-4 py-2 rounded-lg text-sm font-medium border transition-colors ${isDark ? 'border-neutral-800 hover:border-neutral-700' : 'border-gray-200 hover:border-gray-300'}`}
+              {...buttonAnimation}
+              className={`hidden sm:inline-flex px-4 py-2 rounded-full text-sm font-sans font-medium border transition-all duration-300 items-center gap-2 ${isDark ? 'border-[#E6E2DA]/30 text-[#8C9A84] hover:border-[#8C9A84] hover:text-[#F9F8F4]' : 'border-[#E6E2DA] text-[#8C9A84] hover:border-[#8C9A84] hover:text-[#2D3A31]'}`}
+              onClick={() => router.push('/dashboard')}
             >
-              Upload photo
+              <ArrowLeft className="w-4 h-4" strokeWidth={1.5} />
+              <span>Back</span>
             </motion.button>
-            {!cloudName && (
-              <p className="text-xs text-red-500 text-center px-2">Set NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME to enable uploads.</p>
-            )}
-          </div>
-
-          <div className="flex-1 w-full space-y-4">
-            <div>
-              <label className={`text-sm mb-1 block ${subtext}`}>Full name</label>
-              <input
-                type="text"
-                value={profile.fullName}
-                onChange={(e) => setProfile((prev) => ({ ...prev, fullName: e.target.value }))}
-                className={`w-full px-4 py-3 rounded-lg focus:outline-none focus:scale-[1.01] focus:border-neutral-700 transition-all duration-200 ${inputStyles}`}
-                placeholder="Enter your full name"
-                disabled={loading}
-              />
-            </div>
-            <div>
-              <label className={`text-sm mb-1 block ${subtext}`}>Mobile number</label>
-              <input
-                type="tel"
-                value={profile.mobileNumber}
-                onChange={(e) => setProfile((prev) => ({ ...prev, mobileNumber: e.target.value }))}
-                className={`w-full px-4 py-3 rounded-lg focus:outline-none focus:scale-[1.01] focus:border-neutral-700 transition-all duration-200 ${inputStyles}`}
-                placeholder="e.g. +1 555 123 4567"
-                disabled={loading}
-              />
-            </div>
-            <div>
-              <label className={`text-sm mb-1 block ${subtext}`}>Email</label>
-              <input
-                type="email"
-                value={profile.email}
-                readOnly
-                className={`w-full px-4 py-3 rounded-lg border border-dashed ${isDark ? 'bg-neutral-900 border-neutral-800 text-gray-300' : 'bg-gray-50 border-gray-200 text-gray-700'} cursor-not-allowed`}
-              />
-            </div>
-          </div>
-        </motion.div>
-
-        {status && (
-          <motion.div
-            initial={{ opacity: 0, y: -5 }}
-            animate={{ opacity: 1, y: 0 }}
-            className={`mb-4 text-sm px-3 py-2 rounded-lg border ${
-              status.type === 'success'
-                ? 'border-green-500/40 text-green-500 bg-green-500/5'
-                : 'border-red-500/40 text-red-500 bg-red-500/5'
-            }`}
-          >
-            {status.message}
           </motion.div>
-        )}
 
-        <motion.button
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
-          type="button"
-          disabled={saving || loading}
-          onClick={handleSave}
-          className={`w-full py-3 rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${buttonStyles}`}
-        >
-          {loading ? 'Loading profile...' : saving ? 'Saving...' : 'Save changes'}
-        </motion.button>
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.15, ...transitions.normal }}
+            className="flex flex-col sm:flex-row items-center sm:items-start gap-6 mb-8"
+          >
+            <div className="flex flex-col items-center gap-3">
+              {/* Arch-shaped Avatar */}
+              <div className={`w-24 h-28 rounded-t-full rounded-b-3xl overflow-hidden border-2 ${isDark ? 'border-[#E6E2DA]/30 bg-[#1A1F1C]' : 'border-[#E6E2DA] bg-[#DCCFC2]/30'} flex items-center justify-center`}>
+                {profile.profilePictureUrl ? (
+                  <img
+                    src={profile.profilePictureUrl}
+                    alt="Profile"
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <span className={`font-serif text-3xl ${isDark ? 'text-[#C27B66]' : 'text-[#C27B66]'}`}>{avatarLetter}</span>
+                )}
+              </div>
+              <motion.button
+                {...buttonAnimation}
+                onClick={openUploadWidget}
+                className={`px-4 py-2 rounded-full text-sm font-sans font-medium border transition-all duration-300 flex items-center gap-2 ${isDark ? 'border-[#E6E2DA]/30 text-[#8C9A84] hover:border-[#8C9A84] hover:bg-[#8C9A84]/10' : 'border-[#E6E2DA] text-[#8C9A84] hover:border-[#8C9A84] hover:bg-[#8C9A84]/10'}`}
+              >
+                <Upload className="w-4 h-4" strokeWidth={1.5} />
+                <span>Upload photo</span>
+              </motion.button>
+              {!cloudName && (
+                <p className="text-xs text-[#C27B66] text-center px-2 font-sans">Set NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME to enable uploads.</p>
+              )}
+            </div>
+
+            <div className="flex-1 w-full space-y-4">
+              <div>
+                <label className={`text-sm font-sans mb-2 block ${isDark ? 'text-[#8C9A84]' : 'text-[#8C9A84]'}`}>Full name</label>
+                <input
+                  type="text"
+                  value={profile.fullName}
+                  onChange={(e) => setProfile((prev) => ({ ...prev, fullName: e.target.value }))}
+                  className={`w-full px-4 py-3 rounded-2xl font-sans ${isDark ? 'bg-[#1A1F1C]/50 border-[#E6E2DA]/20 text-[#F9F8F4] placeholder-[#8C9A84]/50' : 'bg-[#DCCFC2]/30 border-[#E6E2DA] text-[#2D3A31] placeholder-[#8C9A84]'} border focus:outline-none focus:border-[#8C9A84] transition-all duration-300`}
+                  placeholder="Enter your full name"
+                  disabled={loading}
+                />
+              </div>
+              <div>
+                <label className={`text-sm font-sans mb-2 block ${isDark ? 'text-[#8C9A84]' : 'text-[#8C9A84]'}`}>Mobile number</label>
+                <input
+                  type="tel"
+                  value={profile.mobileNumber}
+                  onChange={(e) => setProfile((prev) => ({ ...prev, mobileNumber: e.target.value }))}
+                  className={`w-full px-4 py-3 rounded-2xl font-sans ${isDark ? 'bg-[#1A1F1C]/50 border-[#E6E2DA]/20 text-[#F9F8F4] placeholder-[#8C9A84]/50' : 'bg-[#DCCFC2]/30 border-[#E6E2DA] text-[#2D3A31] placeholder-[#8C9A84]'} border focus:outline-none focus:border-[#8C9A84] transition-all duration-300`}
+                  placeholder="e.g. +1 555 123 4567"
+                  disabled={loading}
+                />
+              </div>
+              <div>
+                <label className={`text-sm font-sans mb-2 block ${isDark ? 'text-[#8C9A84]' : 'text-[#8C9A84]'}`}>Email</label>
+                <input
+                  type="email"
+                  value={profile.email}
+                  readOnly
+                  className={`w-full px-4 py-3 rounded-2xl font-sans border border-dashed cursor-not-allowed ${isDark ? 'bg-[#1A1F1C]/30 border-[#E6E2DA]/20 text-[#8C9A84]/70' : 'bg-[#DCCFC2]/20 border-[#E6E2DA] text-[#8C9A84]'}`}
+                />
+              </div>
+            </div>
+          </motion.div>
+
+          {status && (
+            <motion.div
+              initial={{ opacity: 0, y: -5 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={transitions.fast}
+              className={`mb-4 text-sm font-sans px-4 py-3 rounded-2xl flex items-center gap-2 ${
+                status.type === 'success'
+                  ? (isDark ? 'bg-[#8C9A84]/10 text-[#8C9A84] border border-[#8C9A84]/20' : 'bg-[#8C9A84]/10 text-[#8C9A84] border border-[#8C9A84]/20')
+                  : 'bg-terracotta/10 text-[#C27B66] border border-terracotta/20'
+              }`}
+            >
+              <Leaf className="w-4 h-4" strokeWidth={1.5} />
+              {status.message}
+            </motion.div>
+          )}
+
+          <motion.button
+            {...buttonAnimation}
+            type="button"
+            disabled={saving || loading}
+            onClick={handleSave}
+            className={`w-full py-3.5 rounded-full font-sans font-medium transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed ${isDark ? 'bg-[#8C9A84] text-[#F9F8F4] hover:bg-[#8C9A84]/90' : 'bg-[#2D3A31] text-[#F9F8F4] hover:bg-[#4A5D4E]'}`}
+          >
+            {loading ? 'Loading profile...' : saving ? 'Preserving...' : 'Save changes'}
+          </motion.button>
+        </div>
       </motion.div>
     </div>
   );
