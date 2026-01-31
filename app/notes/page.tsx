@@ -2,9 +2,23 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { motion, AnimatePresence, type Variants } from 'framer-motion';
-import FloatingGradients from '../components/FloatingGradients';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Pin, FileText, Search, Plus, ArrowLeft, Trash2, X, Menu, ChevronLeft, ChevronRight, Folder, AlertCircle, NotebookPen } from 'lucide-react';
+import BotanicalGradients from '../components/BotanicalGradients';
 import { useTheme } from '../components/ThemeProvider';
+import { 
+  cardVariants, 
+  staggerContainer, 
+  dropdownVariants, 
+  sidebarVariants,
+  modalVariants,
+  overlayVariants,
+  buttonAnimation,
+  cardAnimation,
+  tagVariants,
+  transitions,
+  easing
+} from '@/lib/animations';
 
 export default function NotesPage() {
   const router = useRouter();
@@ -48,20 +62,6 @@ export default function NotesPage() {
   const dropdownRef = useRef<HTMLDivElement>(null);
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
-
-  // Styling
-  const bg = isDark ? 'bg-black text-white' : 'bg-white text-gray-900';
-  const cardBg = isDark
-    ? 'bg-neutral-900/60 border-neutral-800'
-    : 'bg-white/60 border-gray-200';
-  const inputStyles = isDark
-    ? 'bg-neutral-900 border-neutral-800 text-white placeholder-gray-500'
-    : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500';
-  const buttonStyles = isDark
-    ? 'bg-white text-black hover:bg-gray-100'
-    : 'bg-black text-white hover:bg-gray-900';
-  const hoverBg = isDark ? 'hover:bg-neutral-800' : 'hover:bg-gray-100';
-  const dividerColor = isDark ? 'border-neutral-800' : 'border-gray-200';
 
   // Fetch user profile
   useEffect(() => {
@@ -138,14 +138,12 @@ export default function NotesPage() {
   useEffect(() => {
     if (!editingNote || viewMode !== 'editor') return;
 
-    // Clear previous timeout
     if (saveTimeoutRef.current) {
       clearTimeout(saveTimeoutRef.current);
     }
 
     setSaveStatus('Saving...');
 
-    // Debounce save by 1 second
     saveTimeoutRef.current = setTimeout(async () => {
       try {
         const res = await fetch(`/api/notes/${editingNote._id}`, {
@@ -165,8 +163,6 @@ export default function NotesPage() {
         }
 
         setSaveStatus('Saved ✓');
-
-        // Update the note in the list
         setNotes(notes.map(n => n._id === editingNote._id ? editingNote : n));
       } catch (error) {
         console.error('Error saving note:', error);
@@ -181,7 +177,7 @@ export default function NotesPage() {
     };
   }, [editingNote, viewMode]);
 
-  // Keyboard shortcuts (Escape clears when focused)
+  // Keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && document.activeElement === searchInputRef.current) {
@@ -260,7 +256,6 @@ export default function NotesPage() {
     setSelectedNote(note);
     setEditingNote(note);
     setViewMode('editor');
-    console.log('Selected note:', note);
   };
 
   // Create new folder
@@ -274,7 +269,7 @@ export default function NotesPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           name: name.trim(),
-          color: '#3b82f6',
+          color: '#8C9A84',
         }),
       });
 
@@ -289,19 +284,31 @@ export default function NotesPage() {
     }
   };
 
-  // Get folder color
-  const getFolderColor = (folderName: string) => {
-    const folder = folders.find(f => f.name === folderName);
-    return folder?.color || '#3b82f6';
-  };
-
-  // Get tag color (hash-based consistent coloring)
+  // Get tag color (botanical palette)
   const getTagColor = (tagName: string) => {
-    const colors = ['#ec4899', '#f59e0b', '#10b981', '#3b82f6', '#8b5cf6', '#06b6d4', '#f97316', '#6366f1'];
+    const colors = ['#C27B66', '#8C9A84', '#DCCFC2', '#4A5D4E', '#E6E2DA', '#2D3A31'];
     let hash = 0;
     for (let i = 0; i < tagName.length; i++) {
       hash = ((hash << 5) - hash) + tagName.charCodeAt(i);
-      hash = hash & hash; // Convert to 32bit integer
+      hash = hash & hash;
+    }
+    return colors[Math.abs(hash) % colors.length];
+  };
+
+  // Get folder color (botanical palette - subtle muted tones)
+  const getFolderColor = (folderName: string) => {
+    const colors = [
+      '#8C9A84', // sage
+      '#C27B66', // terracotta  
+      '#4A5D4E', // forest
+      '#DCCFC2', // clay
+      '#9BA593', // muted sage
+      '#B08D7A', // muted terracotta
+    ];
+    let hash = 0;
+    for (let i = 0; i < folderName.length; i++) {
+      hash = ((hash << 5) - hash) + folderName.charCodeAt(i);
+      hash = hash & hash;
     }
     return colors[Math.abs(hash) % colors.length];
   };
@@ -319,17 +326,7 @@ export default function NotesPage() {
       .sort((a, b) => b.count - a.count);
   };
 
-  // Card animation variants
-  const cardVariants: Variants = {
-    hidden: { opacity: 0, y: 8 },
-    show: {
-      opacity: 1,
-      y: 0,
-      transition: { type: 'spring', stiffness: 240, damping: 22 },
-    },
-  };
-
-  // Filter notes by folder, tag, and search
+  // Filter notes
   const getFilteredNotes = () => {
     let result = selectedFolder === 'all' 
       ? notes 
@@ -347,7 +344,6 @@ export default function NotesPage() {
       );
     }
     
-    // Sort: pinned first, then by updatedAt (most recent)
     return result.sort((a, b) => {
       if (a.isPinned !== b.isPinned) {
         return a.isPinned ? -1 : 1;
@@ -357,7 +353,6 @@ export default function NotesPage() {
   };
   const filteredNotes = getFilteredNotes();
 
-
   // Handle delete note
   const handleDeleteNote = async () => {
     if (!editingNote) return;
@@ -365,7 +360,6 @@ export default function NotesPage() {
     try {
       setDeleting(true);
       
-      // Cancel any pending auto-save
       if (saveTimeoutRef.current) {
         clearTimeout(saveTimeoutRef.current);
       }
@@ -380,7 +374,6 @@ export default function NotesPage() {
         throw new Error('Failed to delete note');
       }
 
-      // Only clear after successful delete
       setEditingNote(null);
       setNotes(notes.filter(n => n._id !== noteId));
       setViewMode('list');
@@ -420,63 +413,187 @@ export default function NotesPage() {
       .finally(() => setNotesLoading(false));
   };
 
-  return (
-    <div className={`min-h-screen ${bg} relative`}>
-      <FloatingGradients />
+  // Sidebar content component (reused for desktop and mobile)
+  const SidebarContent = () => (
+    <>
+      {/* All Notes */}
+      <button 
+        onClick={() => {
+          setSelectedFolder('all');
+          setSelectedTag(null);
+          setSidebarOpen(false);
+        }}
+        className={`w-full text-left px-4 py-3 rounded-2xl font-sans transition-all duration-500 flex items-center gap-3 ${
+          selectedFolder === 'all' 
+            ? (isDark ? 'bg-[#242B26] shadow-paper' : 'bg-white shadow-paper') 
+            : (isDark ? 'hover:bg-[#242B26]/50' : 'hover:bg-[#DCCFC2]/30')
+        }`}
+      >
+        <FileText className={`w-4 h-4 ${isDark ? 'text-[#8C9A84]' : 'text-[#8C9A84]'}`} strokeWidth={1.5} />
+        <span className={isDark ? 'text-[#F9F8F4]' : 'text-[#2D3A31]'}>All Notes</span>
+      </button>
 
-      {/* Header */}
-      <header className={`sticky top-0 z-50 ${cardBg} backdrop-blur border-b ${dividerColor} md:h-[64px]`}>
-        <div className="w-full h-full px-4 py-3 md:py-0 flex items-center justify-between gap-4">
+      {/* All Files - Link to Files Page */}
+      <button 
+        onClick={() => {
+          router.push('/files');
+        }}
+        className={`w-full text-left px-4 py-3 rounded-2xl font-sans transition-all duration-500 flex items-center gap-3 ${isDark ? 'hover:bg-[#242B26]/50' : 'hover:bg-[#DCCFC2]/30'}`}
+      >
+        <Folder className={`w-4 h-4 ${isDark ? 'text-[#8C9A84]' : 'text-[#8C9A84]'}`} strokeWidth={1.5} />
+        <span className={isDark ? 'text-[#F9F8F4]' : 'text-[#2D3A31]'}>All Files</span>
+      </button>
+
+      <div className={`my-5 h-px ${isDark ? 'bg-[#E6E2DA]/20' : 'bg-[#E6E2DA]/50'}`} />
+
+      {/* Folders Section */}
+      <div className="space-y-2">
+        <div className="flex items-center justify-between px-4">
+          <span className={`text-xs font-sans uppercase tracking-widest ${isDark ? 'text-[#8C9A84]' : 'text-[#8C9A84]'}`}>
+            Folders
+          </span>
+          <button
+            onClick={handleCreateFolder}
+            className={`w-6 h-6 rounded-full flex items-center justify-center ${isDark ? 'hover:bg-[#242B26]' : 'hover:bg-[#DCCFC2]/50'} transition-colors`}
+            title="New Folder"
+          >
+            <Plus className={`w-3 h-3 ${isDark ? 'text-[#8C9A84]' : 'text-[#8C9A84]'}`} strokeWidth={2} />
+          </button>
+        </div>
+        {folders.length === 0 ? (
+          <div className={`px-4 py-3 text-sm font-sans ${isDark ? 'text-[#8C9A84]/60' : 'text-[#8C9A84]'}`}>
+            No folders yet
+          </div>
+        ) : (
+          <div className="space-y-1">
+            {folders.map((folder) => (
+              <button
+                key={folder._id}
+                onClick={() => {
+                  setSelectedFolder(folder.name);
+                  setSidebarOpen(false);
+                }}
+                className={`w-full text-left px-4 py-3 rounded-2xl font-sans transition-all duration-500 flex items-center gap-3 ${
+                  selectedFolder === folder.name 
+                    ? (isDark ? 'bg-[#242B26] shadow-paper' : 'bg-white shadow-paper') 
+                    : (isDark ? 'hover:bg-[#242B26]/50' : 'hover:bg-[#DCCFC2]/30')
+                }`}
+              >
+                <div 
+                  className={`w-3 h-3 rounded-full ${isDark ? 'opacity-80' : 'opacity-70'}`}
+                  style={{ backgroundColor: getFolderColor(folder.name) }}
+                />
+                <span className={`text-sm truncate ${isDark ? 'text-[#F9F8F4]' : 'text-[#2D3A31]'}`}>{folder.name}</span>
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+
+      <div className={`my-5 h-px ${isDark ? 'bg-[#E6E2DA]/20' : 'bg-[#E6E2DA]/50'}`} />
+
+      {/* Tags Section */}
+      <div className="space-y-2">
+        <div className="px-4">
+          <span className={`text-xs font-sans uppercase tracking-widest ${isDark ? 'text-[#8C9A84]' : 'text-[#8C9A84]'}`}>
+            Tags
+          </span>
+        </div>
+        {getAllTags().length === 0 ? (
+          <div className={`px-4 py-3 text-sm font-sans ${isDark ? 'text-[#8C9A84]/60' : 'text-[#8C9A84]'}`}>
+            No tags yet
+          </div>
+        ) : (
+          <div className="space-y-1">
+            {getAllTags().map((tag) => (
+              <button
+                key={tag.name}
+                onClick={() => {
+                  setSelectedTag(selectedTag === tag.name ? null : tag.name);
+                  setSidebarOpen(false);
+                }}
+                className={`w-full text-left px-4 py-3 rounded-2xl font-sans transition-all duration-500 flex items-center justify-between ${
+                  selectedTag === tag.name 
+                    ? (isDark ? 'bg-[#242B26] shadow-paper' : 'bg-white shadow-paper') 
+                    : (isDark ? 'hover:bg-[#242B26]/50' : 'hover:bg-[#DCCFC2]/30')
+                }`}
+              >
+                <span className="flex items-center gap-3 text-sm">
+                  <span className="w-2 h-2 rounded-full" style={{ backgroundColor: getTagColor(tag.name) }} />
+                  <span className={`truncate ${isDark ? 'text-[#F9F8F4]' : 'text-[#2D3A31]'}`}>{tag.name}</span>
+                </span>
+                <span className={`text-xs ${isDark ? 'text-[#8C9A84]/60' : 'text-[#8C9A84]'}`}>
+                  {tag.count}
+                </span>
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+    </>
+  );
+
+  return (
+    <div className={`min-h-screen ${isDark ? 'bg-[#1A1F1C]' : 'bg-[#F9F8F4]'} relative`}>
+      <BotanicalGradients />
+
+      {/* Header - Hidden in editor mode */}
+      {viewMode === 'list' && (
+        <header className={`sticky top-0 z-50 ${isDark ? 'bg-[#1A1F1C]/80' : 'bg-[#F9F8F4]/80'} backdrop-blur-xl border-b ${isDark ? 'border-[#E6E2DA]/20' : 'border-[#E6E2DA]/50'}`}>
+        <div className="w-full h-16 px-4 flex items-center justify-between gap-4">
           {/* Left: Logo + Hamburger */}
           <div className="flex items-center gap-3">
             {/* Desktop sidebar toggle */}
             <button
               onClick={() => setShowSidebar(!showSidebar)}
-              className={`hidden md:inline-flex items-center justify-center w-9 h-9 rounded-lg ${hoverBg} transition-colors`}
+              className={`hidden md:inline-flex items-center justify-center w-9 h-9 rounded-full ${isDark ? 'hover:bg-[#242B26]' : 'hover:bg-[#DCCFC2]/50'} transition-all duration-500`}
               aria-label="Toggle sidebar"
             >
-              {showSidebar ? '⟨⟩' : '☰'}
+              {showSidebar ? <ChevronLeft className="w-4 h-4" strokeWidth={1.5} /> : <ChevronRight className="w-4 h-4" strokeWidth={1.5} />}
             </button>
 
             <button
               onClick={() => setSidebarOpen(!sidebarOpen)}
-              className={`md:hidden text-2xl ${isDark ? 'text-white' : 'text-gray-900'}`}
+              className={`md:hidden p-2 rounded-full ${isDark ? 'hover:bg-[#242B26]' : 'hover:bg-[#DCCFC2]/50'} transition-colors`}
               aria-label="Toggle sidebar"
             >
-              ☰
+              <Menu className="w-5 h-5" strokeWidth={1.5} />
             </button>
-            <h1 className="text-2xl font-bold">Jot</h1>
+            <h1 className={`font-serif text-2xl ${isDark ? 'text-[#F9F8F4]' : 'text-[#2D3A31]'}`}>Jot</h1>
           </div>
 
           {/* Center: Search */}
-          <div className="flex-1 max-w-[400px] hidden sm:block">
-            <div className="relative">
-              <input
-                ref={searchInputRef}
-                type="text"
-                placeholder="Search notes..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className={`w-full px-4 py-2 pr-10 rounded-lg border ${inputStyles} focus:outline-none focus:ring-2 focus:ring-offset-0 ${isDark ? 'focus:ring-neutral-700' : 'focus:ring-gray-400'} transition-all`}
-              />
-              {searchQuery && (
-                <button
-                  onClick={() => setSearchQuery('')}
-                  className={`absolute right-3 top-1/2 -translate-y-1/2 text-lg ${isDark ? 'text-gray-400 hover:text-white' : 'text-gray-500 hover:text-gray-900'} transition-colors`}
-                  aria-label="Clear search"
-                >
-                  ✕
-                </button>
-              )}
+          {viewMode === 'list' && (
+            <div className="flex-1 max-w-[400px] hidden sm:block">
+              <div className="relative">
+                <Search className={`absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 ${isDark ? 'text-[#8C9A84]' : 'text-[#8C9A84]'}`} strokeWidth={1.5} />
+                <input
+                  ref={searchInputRef}
+                  type="text"
+                  placeholder="Search notes..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className={`w-full pl-11 pr-10 py-2.5 rounded-full border font-sans ${isDark ? 'bg-[#242B26]/50 border-[#E6E2DA]/20 text-[#F9F8F4] placeholder-[#8C9A84]/60' : 'bg-white/50 border-[#E6E2DA] text-[#2D3A31] placeholder-[#8C9A84]'} focus:outline-none focus:border-[#8C9A84] transition-all duration-300`}
+                />
+                {searchQuery && (
+                  <button
+                    onClick={() => setSearchQuery('')}
+                    className={`absolute right-4 top-1/2 -translate-y-1/2 ${isDark ? 'text-[#8C9A84] hover:text-[#F9F8F4]' : 'text-[#8C9A84] hover:text-[#2D3A31]'} transition-colors`}
+                    aria-label="Clear search"
+                  >
+                    <X className="w-4 h-4" strokeWidth={1.5} />
+                  </button>
+                )}
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Right: Profile Dropdown */}
           <div className="relative" ref={dropdownRef}>
             <button
               onClick={() => setDropdownOpen(!dropdownOpen)}
               disabled={profileLoading}
-              className={`w-10 h-10 rounded-full border-2 ${isDark ? 'border-neutral-700' : 'border-gray-300'} flex items-center justify-center font-semibold text-sm ${hoverBg} transition-all overflow-hidden`}
+              className={`w-10 h-10 rounded-full border-2 ${isDark ? 'border-[#E6E2DA]/30' : 'border-[#E6E2DA]'} flex items-center justify-center font-serif text-sm ${isDark ? 'bg-[#242B26] hover:border-[#8C9A84]' : 'bg-white hover:border-[#8C9A84]'} transition-all duration-300 overflow-hidden`}
             >
               {profileLoading ? (
                 <span className="text-xs">...</span>
@@ -487,7 +604,7 @@ export default function NotesPage() {
                   className="w-full h-full object-cover"
                 />
               ) : (
-                getAvatarContent()
+                <span className={isDark ? 'text-[#C27B66]' : 'text-[#C27B66]'}>{getAvatarContent()}</span>
               )}
             </button>
 
@@ -495,17 +612,17 @@ export default function NotesPage() {
             <AnimatePresence>
               {dropdownOpen && (
                 <motion.div
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                  transition={{ duration: 0.2 }}
-                  className={`absolute right-0 mt-2 w-56 ${isDark ? 'bg-neutral-900' : 'bg-white'} border ${isDark ? 'border-neutral-700' : 'border-gray-300'} rounded-xl shadow-2xl overflow-hidden z-[70]`}
+                  variants={dropdownVariants}
+                  initial="hidden"
+                  animate="visible"
+                  exit="exit"
+                  className={`absolute right-0 mt-2 w-56 ${isDark ? 'bg-[#242B26]' : 'bg-white'} border ${isDark ? 'border-[#E6E2DA]/20' : 'border-[#E6E2DA]'} rounded-2xl shadow-lift overflow-hidden z-[70]`}
                 >
                   {/* User Email */}
-                  <div className={`px-4 py-3 text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'} truncate`}>
+                  <div className={`px-4 py-3 text-sm font-sans ${isDark ? 'text-[#8C9A84]' : 'text-[#8C9A84]'} truncate`}>
                     {profile.email}
                   </div>
-                  <div className={`border-t ${dividerColor}`} />
+                  <div className={`h-px ${isDark ? 'bg-[#E6E2DA]/20' : 'bg-[#E6E2DA]/50'}`} />
                   
                   {/* Menu Items */}
                   <button
@@ -513,7 +630,7 @@ export default function NotesPage() {
                       setDropdownOpen(false);
                       router.push('/profile');
                     }}
-                    className={`w-full text-left px-4 py-2.5 text-sm ${hoverBg} transition-colors`}
+                    className={`w-full text-left px-4 py-3 text-sm font-sans ${isDark ? 'hover:bg-[#1A1F1C]' : 'hover:bg-[#DCCFC2]/30'} transition-colors ${isDark ? 'text-[#F9F8F4]' : 'text-[#2D3A31]'}`}
                   >
                     Profile
                   </button>
@@ -522,30 +639,28 @@ export default function NotesPage() {
                       setDropdownOpen(false);
                       router.push('/dashboard');
                     }}
-                    className={`w-full text-left px-4 py-2.5 text-sm ${hoverBg} transition-colors`}
+                    className={`w-full text-left px-4 py-3 text-sm font-sans ${isDark ? 'hover:bg-[#1A1F1C]' : 'hover:bg-[#DCCFC2]/30'} transition-colors ${isDark ? 'text-[#F9F8F4]' : 'text-[#2D3A31]'}`}
                   >
                     Dashboard
                   </button>
                   <button
-                    onClick={() => {
-                      toggleTheme();
-                    }}
-                    className={`w-full text-left px-4 py-2.5 text-sm ${hoverBg} transition-colors flex items-center justify-between`}
+                    onClick={() => toggleTheme()}
+                    className={`w-full text-left px-4 py-3 text-sm font-sans ${isDark ? 'hover:bg-[#1A1F1C]' : 'hover:bg-[#DCCFC2]/30'} transition-colors flex items-center justify-between ${isDark ? 'text-[#F9F8F4]' : 'text-[#2D3A31]'}`}
                   >
                     <span>Dark Mode</span>
-                    <div className={`w-10 h-5 rounded-full transition-all ${isDark ? 'bg-blue-600' : 'bg-gray-400'} flex items-center`}>
+                    <div className={`w-10 h-5 rounded-full transition-all ${isDark ? 'bg-[#8C9A84]' : 'bg-[#E6E2DA]'} flex items-center`}>
                       <div className={`w-4 h-4 rounded-full bg-white shadow-md transform transition-transform ${isDark ? 'translate-x-5' : 'translate-x-0.5'}`} />
                     </div>
                   </button>
                   
-                  <div className={`border-t ${dividerColor}`} />
+                  <div className={`h-px ${isDark ? 'bg-[#E6E2DA]/20' : 'bg-[#E6E2DA]/50'}`} />
                   
                   <button
                     onClick={() => {
                       setDropdownOpen(false);
                       handleLogout();
                     }}
-                    className={`w-full text-left px-4 py-2.5 text-sm ${hoverBg} transition-colors text-red-500`}
+                    className={`w-full text-left px-4 py-3 text-sm font-sans ${isDark ? 'hover:bg-[#1A1F1C]' : 'hover:bg-[#DCCFC2]/30'} transition-colors text-[#C27B66]`}
                   >
                     Logout
                   </button>
@@ -554,256 +669,98 @@ export default function NotesPage() {
             </AnimatePresence>
           </div>
         </div>
-
       </header>
+      )}
 
       {/* Main Content Wrapper */}
       <div className="flex relative">
-        {/* Sidebar Backdrop (Mobile) */}
-        <AnimatePresence>
-          {sidebarOpen && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setSidebarOpen(false)}
-              className="fixed inset-0 bg-black/50 z-40 md:hidden"
-            />
-          )}
-        </AnimatePresence>
+        {/* Sidebar Backdrop (Mobile) - Only in list mode */}
+        {viewMode === 'list' && (
+          <AnimatePresence>
+            {sidebarOpen && (
+              <motion.div
+                variants={overlayVariants}
+                initial="hidden"
+                animate="visible"
+                exit="exit"
+                onClick={() => setSidebarOpen(false)}
+                className="fixed inset-0 bg-black/30 backdrop-blur-sm z-40 md:hidden"
+              />
+            )}
+          </AnimatePresence>
+        )}
 
-        {/* Left Sidebar */}
-        {/* Desktop: Animated slide in/out; Mobile: Slide in when open */}
-        <AnimatePresence initial={false}>
-          {showSidebar && (
-            <motion.div
-              key="desktop-sidebar"
-              initial={{ x: -260, opacity: 0 }}
-              animate={{ x: 0, opacity: 1 }}
-              exit={{ x: -260, opacity: 0 }}
-              transition={{ type: 'spring', stiffness: 260, damping: 26 }}
-              className={`hidden md:block md:relative top-[60px] left-0 h-[calc(100vh-60px)] w-[250px] ${cardBg} backdrop-blur-2xl backdrop-saturate-150 ${isDark ? 'border-neutral-800' : 'border-gray-200'} border-r p-4 overflow-y-auto`}
-            >
-          {/* All Notes */}
-          <button 
-            onClick={() => {
-              setSelectedFolder('all');
-              setSelectedTag(null);
-            }}
-            className={`w-full text-left px-3 py-2 rounded-lg ${selectedFolder === 'all' ? (isDark ? 'bg-neutral-800' : 'bg-gray-200') : ''} ${hoverBg} transition-colors flex items-center gap-2`}
-          >
-            <span>📄</span>
-            <span>All Notes</span>
-          </button>
-
-          <div className={`my-4 border-t ${dividerColor}`} />
-
-          {/* Folders Section */}
-          <div className="space-y-2">
-            <div className="flex items-center justify-between px-3">
-              <span className={`text-sm font-semibold ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
-                Folders
-              </span>
-              <button
-                onClick={handleCreateFolder}
-                className={`text-lg ${isDark ? 'text-gray-400 hover:text-white' : 'text-gray-600 hover:text-black'} transition-colors`}
-                title="New Folder"
+        {/* Desktop Sidebar - Only in list mode */}
+        {viewMode === 'list' && (
+          <AnimatePresence initial={false}>
+            {showSidebar && (
+              <motion.aside
+                key="desktop-sidebar"
+                initial={{ x: -260, opacity: 0 }}
+                animate={{ x: 0, opacity: 1 }}
+                exit={{ x: -260, opacity: 0 }}
+                transition={{ ...easing.springGentle }}
+                className={`hidden md:block md:relative h-[calc(100vh-64px)] w-[260px] ${isDark ? 'bg-[#1A1F1C]' : 'bg-[#DCCFC2]/20'} border-r ${isDark ? 'border-[#E6E2DA]/20' : 'border-[#E6E2DA]/50'} p-4 overflow-y-auto`}
               >
-                +
-              </button>
-            </div>
-            {folders.length === 0 ? (
-              <div className={`px-3 py-2 text-sm ${isDark ? 'text-gray-500' : 'text-gray-500'}`}>
-                No folders yet
-              </div>
-            ) : (
-              <div className="space-y-1">
-                {folders.map((folder) => (
-                  <button
-                    key={folder._id}
-                    onClick={() => setSelectedFolder(folder.name)}
-                    className={`w-full text-left px-3 py-2 rounded-lg ${selectedFolder === folder.name ? (isDark ? 'bg-neutral-800' : 'bg-gray-200') : ''} ${hoverBg} transition-colors flex items-center gap-2`}
-                  >
-                    <span 
-                      className="w-2 h-2 rounded-full" 
-                      style={{ backgroundColor: folder.color }}
-                    />
-                    <span className="text-sm truncate">{folder.name}</span>
-                  </button>
-                ))}
-              </div>
+                <SidebarContent />
+              </motion.aside>
             )}
-          </div>
+          </AnimatePresence>
+        )}
 
-          <div className={`my-4 border-t ${dividerColor}`} />
-
-          {/* Tags Section */}
-          <div className="space-y-2">
-            <div className="px-3">
-              <span className={`text-sm font-semibold ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
-                Tags
-              </span>
-            </div>
-            {getAllTags().length === 0 ? (
-              <div className={`px-3 py-2 text-sm ${isDark ? 'text-gray-500' : 'text-gray-500'}`}>
-                No tags yet
-              </div>
-            ) : (
-              <div className="space-y-1">
-                {getAllTags().map((tag) => (
-                  <button
-                    key={tag.name}
-                    onClick={() => setSelectedTag(selectedTag === tag.name ? null : tag.name)}
-                    className={`w-full text-left px-3 py-2 rounded-lg ${selectedTag === tag.name ? (isDark ? 'bg-neutral-800' : 'bg-gray-200') : ''} ${hoverBg} transition-colors flex items-center justify-between`}
-                  >
-                    <span className="flex items-center gap-2 text-sm">
-                      <span className="w-2 h-2 rounded-full" style={{ backgroundColor: getTagColor(tag.name) }} />
-                      <span className="truncate">{tag.name}</span>
-                    </span>
-                    <span className={`text-xs ${isDark ? 'text-gray-500' : 'text-gray-600'}`}>
-                      {tag.count}
-                    </span>
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {/* Mobile Sidebar - Animated */}
-        <AnimatePresence initial={false}>
-          {showSidebar && (
-            <motion.aside
-              key="mobile-sidebar"
-              initial={{ x: -250, opacity: 0 }}
-              animate={{ x: sidebarOpen ? 0 : -250, opacity: 1 }}
-              exit={{ x: -250, opacity: 0 }}
-              transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-              className={`md:hidden fixed top-[60px] left-0 h-[calc(100vh-60px)] w-[250px] ${cardBg} backdrop-blur-2xl backdrop-saturate-150 ${isDark ? 'border-neutral-800' : 'border-gray-200'} border-r p-4 z-40 overflow-y-auto`}
-            >
-          {/* Close button (Mobile only) */}
-          <button
-            onClick={() => setSidebarOpen(false)}
-            className={`md:hidden absolute top-4 right-4 text-xl ${isDark ? 'text-white' : 'text-gray-900'}`}
-            aria-label="Close sidebar"
-          >
-            ✕
-          </button>
-
-          {/* All Notes */}
-          <button 
-            onClick={() => {
-              setSelectedFolder('all');
-              setSelectedTag(null);
-            }}
-            className={`w-full text-left px-3 py-2 rounded-lg ${selectedFolder === 'all' ? (isDark ? 'bg-neutral-800' : 'bg-gray-200') : ''} ${hoverBg} transition-colors flex items-center gap-2`}
-          >
-            <span>📄</span>
-            <span>All Notes</span>
-          </button>
-
-          <div className={`my-4 border-t ${dividerColor}`} />
-
-          {/* Folders Section */}
-          <div className="space-y-2">
-            <div className="flex items-center justify-between px-3">
-              <span className={`text-sm font-semibold ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
-                Folders
-              </span>
-              <button
-                onClick={handleCreateFolder}
-                className={`text-lg ${isDark ? 'text-gray-400 hover:text-white' : 'text-gray-600 hover:text-black'} transition-colors`}
-                title="New Folder"
+        {/* Mobile Sidebar - Only in list mode */}
+        {viewMode === 'list' && (
+          <AnimatePresence initial={false}>
+            {sidebarOpen && (
+              <motion.aside
+                key="mobile-sidebar"
+                initial={{ x: -300, opacity: 0 }}
+                animate={{ x: 0, opacity: 1 }}
+                exit={{ x: -300, opacity: 0 }}
+                transition={{ ...easing.springGentle }}
+                className={`md:hidden fixed top-16 left-0 h-[calc(100vh-64px)] w-[280px] ${isDark ? 'bg-[#1A1F1C]' : 'bg-[#DCCFC2]/30'} backdrop-blur-xl border-r ${isDark ? 'border-[#E6E2DA]/20' : 'border-[#E6E2DA]/50'} p-4 z-50 overflow-y-auto`}
               >
-                +
-              </button>
-            </div>
-            {folders.length === 0 ? (
-              <div className={`px-3 py-2 text-sm ${isDark ? 'text-gray-500' : 'text-gray-500'}`}>
-                No folders yet
-              </div>
-            ) : (
-              <div className="space-y-1">
-                {folders.map((folder) => (
-                  <button
-                    key={folder._id}
-                    onClick={() => setSelectedFolder(folder.name)}
-                    className={`w-full text-left px-3 py-2 rounded-lg ${selectedFolder === folder.name ? (isDark ? 'bg-neutral-800' : 'bg-gray-200') : ''} ${hoverBg} transition-colors flex items-center gap-2`}
-                  >
-                    <span 
-                      className="w-2 h-2 rounded-full" 
-                      style={{ backgroundColor: folder.color }}
-                    />
-                    <span className="text-sm truncate">{folder.name}</span>
-                  </button>
-                ))}
-              </div>
+                {/* Close button */}
+                <button
+                  onClick={() => setSidebarOpen(false)}
+                  className={`absolute top-4 right-4 p-2 rounded-full ${isDark ? 'hover:bg-[#242B26]' : 'hover:bg-[#DCCFC2]/50'} transition-colors`}
+                  aria-label="Close sidebar"
+                >
+                  <X className="w-4 h-4" strokeWidth={1.5} />
+                </button>
+                
+                <div className="mt-8">
+                  <SidebarContent />
+                </div>
+              </motion.aside>
             )}
-          </div>
-
-          <div className={`my-4 border-t ${dividerColor}`} />
-
-          {/* Tags Section */}
-          <div className="space-y-2">
-            <div className="px-3">
-              <span className={`text-sm font-semibold ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
-                Tags
-              </span>
-            </div>
-            {getAllTags().length === 0 ? (
-              <div className={`px-3 py-2 text-sm ${isDark ? 'text-gray-500' : 'text-gray-500'}`}>
-                No tags yet
-              </div>
-            ) : (
-              <div className="space-y-1">
-                {getAllTags().map((tag) => (
-                  <button
-                    key={tag.name}
-                    onClick={() => setSelectedTag(selectedTag === tag.name ? null : tag.name)}
-                    className={`w-full text-left px-3 py-2 rounded-lg flex items-center justify-between ${selectedTag === tag.name ? (isDark ? 'bg-neutral-800' : 'bg-gray-200') : ''} ${hoverBg} transition-colors`}
-                  >
-                    <div className="flex items-center gap-2">
-                      <span className="w-2 h-2 rounded-full" style={{ backgroundColor: getTagColor(tag.name) }} />
-                      <span className="text-sm truncate">{tag.name}</span>
-                    </div>
-                    <span className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
-                      {tag.count}
-                    </span>
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-            </motion.aside>
-          )}
-        </AnimatePresence>
+          </AnimatePresence>
+        )}
 
         {/* Main Content Area */}
-        <main className="flex-1 relative z-10 md:ml-0 ml-0">
+        <main className="flex-1 relative z-10">
           {viewMode === 'list' ? (
-            <div className="p-4">
+            <div className="p-4 md:p-6">
               {/* Top Controls */}
-              <div className="mb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+              <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 {/* Mobile: Search + Create in one row */}
-                <div className="flex sm:hidden items-center gap-2">
+                <div className="flex sm:hidden items-center gap-3">
                   <div className="relative flex-1">
+                    <Search className={`absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 ${isDark ? 'text-[#8C9A84]' : 'text-[#8C9A84]'}`} strokeWidth={1.5} />
                     <input
                       ref={searchInputRef}
                       type="text"
-                      placeholder="Search notes..."
+                      placeholder="Search..."
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
-                      className={`w-full px-3 py-2 pr-9 rounded-lg border ${inputStyles} focus:outline-none focus:ring-2 focus:ring-offset-0 ${isDark ? 'focus:ring-neutral-700' : 'focus:ring-gray-400'} transition-all`}
+                      className={`w-full pl-9 pr-9 py-2.5 rounded-full border font-sans text-sm ${isDark ? 'bg-[#242B26]/50 border-[#E6E2DA]/20 text-[#F9F8F4] placeholder-[#8C9A84]/60' : 'bg-white/50 border-[#E6E2DA] text-[#2D3A31] placeholder-[#8C9A84]'} focus:outline-none focus:border-[#8C9A84] transition-all duration-300`}
                     />
                     {searchQuery && (
                       <button
                         onClick={() => setSearchQuery('')}
-                        className={`absolute right-2 top-1/2 -translate-y-1/2 text-base ${isDark ? 'text-gray-400 hover:text-white' : 'text-gray-500 hover:text-gray-900'} transition-colors`}
-                        aria-label="Clear search"
+                        className={`absolute right-3 top-1/2 -translate-y-1/2 ${isDark ? 'text-[#8C9A84] hover:text-[#F9F8F4]' : 'text-[#8C9A84] hover:text-[#2D3A31]'} transition-colors`}
                       >
-                        ✕
+                        <X className="w-4 h-4" strokeWidth={1.5} />
                       </button>
                     )}
                   </div>
@@ -812,23 +769,23 @@ export default function NotesPage() {
                     whileTap={{ scale: 0.98 }}
                     onClick={handleCreateNote}
                     disabled={creatingNote}
-                    className={`px-3 py-2 rounded-lg font-medium text-sm whitespace-nowrap ${buttonStyles} shadow-md transition-all flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed`}
+                    className={`px-4 py-2.5 rounded-full font-sans font-medium text-sm whitespace-nowrap shadow-paper transition-all duration-500 flex items-center gap-2 disabled:opacity-50 ${isDark ? 'bg-[#8C9A84] text-[#F9F8F4] hover:shadow-lift' : 'bg-[#2D3A31] text-[#F9F8F4] hover:shadow-lift'}`}
                   >
-                    <span className="text-lg">+</span>
+                    <Plus className="w-4 h-4" strokeWidth={2} />
                     <span className="hidden xs:inline">New</span>
                   </motion.button>
                 </div>
 
-                {/* Desktop/New Note Button */}
+                {/* Desktop: New Note Button */}
                 <div className="hidden sm:flex justify-end w-full">
                   <motion.button
-                    whileHover={{ scale: 1.02 }}
+                    whileHover={{ scale: 1.02, y: -2 }}
                     whileTap={{ scale: 0.98 }}
                     onClick={handleCreateNote}
                     disabled={creatingNote}
-                    className={`px-4 py-2 rounded-lg font-medium text-sm ${buttonStyles} shadow-md transition-all flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed ml-auto`}
+                    className={`px-5 py-2.5 rounded-full font-sans font-medium text-sm shadow-paper transition-all duration-500 flex items-center gap-2 disabled:opacity-50 ${isDark ? 'bg-[#8C9A84] text-[#F9F8F4] hover:shadow-lift' : 'bg-[#2D3A31] text-[#F9F8F4] hover:shadow-lift'}`}
                   >
-                    <span className="text-xl">+</span>
+                    <Plus className="w-4 h-4" strokeWidth={2} />
                     <span>{creatingNote ? 'Creating...' : 'New Note'}</span>
                   </motion.button>
                 </div>
@@ -836,16 +793,16 @@ export default function NotesPage() {
 
               {/* Loading State */}
               {notesLoading && (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
                   {[1, 2, 3, 4].map((i) => (
                     <div
                       key={i}
-                      className={`${cardBg} backdrop-blur border ${dividerColor} rounded-xl p-6 animate-pulse`}
+                      className={`${isDark ? 'bg-[#242B26]' : 'bg-white'} rounded-3xl p-6 animate-pulse shadow-paper`}
                     >
-                      <div className={`h-6 ${isDark ? 'bg-neutral-800' : 'bg-gray-300'} rounded mb-4 w-3/4`}></div>
-                      <div className={`h-4 ${isDark ? 'bg-neutral-800' : 'bg-gray-300'} rounded mb-2 w-full`}></div>
-                      <div className={`h-4 ${isDark ? 'bg-neutral-800' : 'bg-gray-300'} rounded mb-4 w-5/6`}></div>
-                      <div className={`h-3 ${isDark ? 'bg-neutral-800' : 'bg-gray-300'} rounded w-1/4`}></div>
+                      <div className={`h-6 ${isDark ? 'bg-[#E6E2DA]/20' : 'bg-[#DCCFC2]'} rounded-full mb-4 w-3/4`}></div>
+                      <div className={`h-4 ${isDark ? 'bg-[#E6E2DA]/20' : 'bg-[#DCCFC2]'} rounded-full mb-2 w-full`}></div>
+                      <div className={`h-4 ${isDark ? 'bg-[#E6E2DA]/20' : 'bg-[#DCCFC2]'} rounded-full mb-4 w-5/6`}></div>
+                      <div className={`h-3 ${isDark ? 'bg-[#E6E2DA]/20' : 'bg-[#DCCFC2]'} rounded-full w-1/4`}></div>
                     </div>
                   ))}
                 </div>
@@ -854,17 +811,19 @@ export default function NotesPage() {
               {/* Error State */}
               {notesError && !notesLoading && (
                 <div className="flex flex-col items-center justify-center min-h-[60vh] text-center">
-                  <div className="text-6xl mb-4">⚠️</div>
-                  <h2 className={`text-2xl font-semibold mb-2 ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                  <div className={`w-16 h-16 rounded-full flex items-center justify-center mb-4 ${isDark ? 'bg-[#C27B66]/20' : 'bg-[#C27B66]/10'}`}>
+                    <AlertCircle className="w-8 h-8 text-[#C27B66]" strokeWidth={1.5} />
+                  </div>
+                  <h2 className={`font-serif text-2xl mb-2 ${isDark ? 'text-[#F9F8F4]' : 'text-[#2D3A31]'}`}>
                     {notesError}
                   </h2>
                   <motion.button
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                     onClick={retryFetch}
-                    className={`mt-4 px-6 py-2 rounded-lg ${buttonStyles}`}
+                    className={`mt-4 px-6 py-2.5 rounded-full font-sans ${isDark ? 'bg-[#8C9A84] text-[#F9F8F4]' : 'bg-[#2D3A31] text-[#F9F8F4]'}`}
                   >
-                    Retry
+                    Try again
                   </motion.button>
                 </div>
               )}
@@ -872,11 +831,13 @@ export default function NotesPage() {
               {/* Empty State */}
               {!notesLoading && !notesError && filteredNotes.length === 0 && (
                 <div className="flex flex-col items-center justify-center min-h-[60vh] text-center">
-                  <div className="text-6xl mb-4">📝</div>
-                  <h2 className={`text-2xl font-semibold mb-2 ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                  <div className={`w-16 h-16 rounded-full flex items-center justify-center mb-4 ${isDark ? 'bg-[#8C9A84]/20' : 'bg-[#DCCFC2]'}`}>
+                    <NotebookPen className={`w-8 h-8 ${isDark ? 'text-[#8C9A84]' : 'text-[#8C9A84]'}`} strokeWidth={1.5} />
+                  </div>
+                  <h2 className={`font-serif text-2xl mb-2 ${isDark ? 'text-[#F9F8F4]' : 'text-[#2D3A31]'}`}>
                     {searchQuery ? `No notes found for '${searchQuery}'` : (selectedFolder === 'all' ? 'No notes yet' : `No notes in ${selectedFolder}`)}
                   </h2>
-                  <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'} mb-4`}>
+                  <p className={`text-sm font-sans ${isDark ? 'text-[#8C9A84]' : 'text-[#8C9A84]'} mb-4`}>
                     {searchQuery ? 'Try a different search term' : (selectedFolder === 'all' ? 'Create your first note to get started' : 'Create a note in this folder')}
                   </p>
                   {searchQuery && (
@@ -884,7 +845,7 @@ export default function NotesPage() {
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
                       onClick={() => setSearchQuery('')}
-                      className={`px-4 py-2 rounded-lg ${buttonStyles} transition-all`}
+                      className={`px-5 py-2.5 rounded-full font-sans border ${isDark ? 'border-[#8C9A84] text-[#8C9A84] hover:bg-[#8C9A84] hover:text-[#F9F8F4]' : 'border-[#2D3A31] text-[#2D3A31] hover:bg-[#2D3A31] hover:text-[#F9F8F4]'} transition-all duration-300`}
                     >
                       Clear Search
                     </motion.button>
@@ -892,75 +853,70 @@ export default function NotesPage() {
                 </div>
               )}
 
-              {/* Notes Grid */}
+              {/* Notes Grid - Staggered Masonry */}
               {!notesLoading && !notesError && filteredNotes.length > 0 && (
                 <motion.div
-                  className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
+                  className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5"
+                  variants={staggerContainer}
                   initial="hidden"
                   animate="show"
-                  transition={{ staggerChildren: 0.05 }}
                 >
-                  {filteredNotes.map((note) => (
+                  {filteredNotes.map((note, index) => (
                     <motion.div
                       key={note._id}
                       variants={cardVariants}
-                      whileHover={{ y: -4, scale: 1.01 }}
-                      whileTap={{ scale: 0.99 }}
+                      {...cardAnimation}
                       onClick={() => handleNoteClick(note)}
-                      className={`${cardBg} backdrop-blur border shadow-sm hover:shadow-md ${
-                        selectedNote?._id === note._id
-                          ? isDark
-                            ? 'border-white'
-                            : 'border-black'
-                          : note.isPinned
-                          ? isDark ? 'border-yellow-600' : 'border-yellow-400'
-                          : dividerColor
-                      } rounded-xl p-6 cursor-pointer transition-all duration-200 hover:shadow-xl relative transform-gpu ${note.isPinned ? (isDark ? 'bg-yellow-950/20' : 'bg-yellow-50/20') : ''}`}
+                      className={`${isDark ? 'bg-[#242B26]' : 'bg-white'} rounded-3xl p-6 cursor-pointer shadow-paper hover:shadow-lift transition-shadow duration-500 relative ${note.isPinned ? (isDark ? 'ring-1 ring-[#C27B66]/30' : 'ring-1 ring-[#C27B66]/20') : ''}`}
                     >
                       {/* Folder Badge */}
-                      <div
-                        className={`absolute top-3 right-3 px-2 py-1 rounded-full text-xs font-medium`}
-                        style={{
-                          backgroundColor: isDark ? `${getFolderColor(note.folder)}33` : `${getFolderColor(note.folder)}22`,
-                          color: getFolderColor(note.folder),
-                        }}
-                      >
+                      <div className={`absolute top-4 right-4 px-3 py-1 rounded-full text-xs font-sans lowercase tracking-wide ${isDark ? 'bg-[#DCCFC2]/20 text-[#8C9A84]' : 'bg-[#DCCFC2] text-[#8C9A84]'}`}>
                         {note.folder}
                       </div>
 
                       {/* Pin indicator */}
                       {note.isPinned && (
-                        <div className="absolute top-3 left-3 text-lg text-yellow-400 drop-shadow-sm">📌</div>
+                        <div className="absolute top-4 left-4">
+                          <Pin className="w-4 h-4 text-[#C27B66]" strokeWidth={1.5} fill="currentColor" />
+                        </div>
                       )}
 
                       {/* Title */}
-                      <h3 className={`text-xl font-bold mb-3 truncate pr-20 ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                      <h3 className={`font-serif text-xl mb-3 pr-20 ${note.isPinned ? 'pl-6' : ''} ${isDark ? 'text-[#F9F8F4]' : 'text-[#2D3A31]'}`}>
                         {note.title}
                       </h3>
 
                       {/* Content Preview */}
-                      <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'} mb-3 line-clamp-2`}>
+                      <p className={`text-sm font-sans mb-4 line-clamp-2 ${isDark ? 'text-[#8C9A84]' : 'text-[#8C9A84]'}`}>
                         {note.content.substring(0, 100) || 'No content'}
                         {note.content.length > 100 && '...'}
                       </p>
+
                       {/* Tags */}
                       {note.tags && note.tags.length > 0 && (
-                        <div className="flex flex-wrap gap-1 mb-3">
+                        <div className="flex flex-wrap gap-2 mb-4">
                           {note.tags.slice(0, 3).map((tag: string, idx: number) => (
-                            <span key={idx} className="px-2 py-1 rounded-full text-xs font-medium text-white" style={{ backgroundColor: getTagColor(tag) }}>
+                            <span 
+                              key={idx} 
+                              className="px-2.5 py-1 rounded-full text-xs font-sans"
+                              style={{ 
+                                backgroundColor: `${getTagColor(tag)}20`,
+                                color: getTagColor(tag)
+                              }}
+                            >
                               {tag}
                             </span>
                           ))}
                           {note.tags.length > 3 && (
-                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${isDark ? 'bg-neutral-700 text-gray-300' : 'bg-gray-300 text-gray-700'}`}>
-                              +{note.tags.length - 3} more
+                            <span className={`px-2.5 py-1 rounded-full text-xs font-sans ${isDark ? 'bg-[#E6E2DA]/20 text-[#8C9A84]' : 'bg-[#DCCFC2] text-[#8C9A84]'}`}>
+                              +{note.tags.length - 3}
                             </span>
                           )}
                         </div>
                       )}
 
                       {/* Timestamp */}
-                      <div className={`text-xs ${isDark ? 'text-gray-500' : 'text-gray-500'}`}>
+                      <div className={`text-xs font-sans uppercase tracking-widest ${isDark ? 'text-[#E6E2DA]/60' : 'text-[#E6E2DA]'}`}>
                         {getRelativeTime(note.updatedAt)}
                       </div>
                     </motion.div>
@@ -970,57 +926,65 @@ export default function NotesPage() {
             </div>
           ) : (
             // EDITOR VIEW
-            <div className="p-4 h-[calc(100vh-60px)] flex flex-col">
+            <motion.div 
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={transitions.enter}
+              className={`px-4 md:px-6 pt-3 pb-4 h-screen flex flex-col ${isDark ? 'bg-[#1A1F1C]' : 'bg-[#F9F8F4]'}`}
+            >
               {/* Editor Toolbar */}
-              <div className={`flex items-center justify-between mb-4 pb-3 border-b ${dividerColor}`}>
+              <div className={`flex items-center justify-between mb-3 pb-2 border-b ${isDark ? 'border-[#E6E2DA]/20' : 'border-[#E6E2DA]/50'}`}>
                 <button
                   onClick={() => {
                     setViewMode('list');
                     setEditingNote(null);
                     setSelectedNote(null);
                   }}
-                  className={`px-3 py-2 rounded-lg text-sm ${hoverBg} transition-colors flex items-center gap-2`}
+                  className={`px-3 py-1.5 rounded-full text-sm font-sans flex items-center gap-1.5 ${isDark ? 'hover:bg-[#242B26]' : 'hover:bg-[#DCCFC2]/30'} transition-all duration-300`}
                 >
-                  ← Back
+                  <ArrowLeft className="w-3.5 h-3.5" strokeWidth={1.5} />
+                  <span className="hidden sm:inline">Back</span>
                 </button>
 
-                <div className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
-                  {saveStatus}
+                <div className={`flex items-center gap-1.5 text-xs font-sans ${isDark ? 'text-[#8C9A84]' : 'text-[#8C9A84]'}`}>
+                  <FileText className="w-3.5 h-3.5" strokeWidth={1.5} />
+                  <span>{saveStatus}</span>
                 </div>
 
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1.5">
                   <motion.button
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                     onClick={() => setEditingNote({ ...editingNote, isPinned: !editingNote?.isPinned })}
-                    className={`px-3 py-2 rounded-lg text-lg transition-colors ${editingNote?.isPinned ? (isDark ? 'bg-yellow-600/30 text-yellow-400' : 'bg-yellow-100 text-yellow-600') : (isDark ? 'hover:bg-neutral-800' : 'hover:bg-gray-100')}`}
+                    className={`p-1.5 rounded-full transition-all duration-300 ${editingNote?.isPinned ? (isDark ? 'bg-terracotta/20 text-[#C27B66]' : 'bg-terracotta/10 text-[#C27B66]') : (isDark ? 'hover:bg-[#242B26] text-[#8C9A84]' : 'hover:bg-[#DCCFC2]/30 text-[#8C9A84]')}`}
                     title={editingNote?.isPinned ? 'Unpin note' : 'Pin note'}
                   >
-                    {editingNote?.isPinned ? '📌' : '📍'}
+                    <Pin className="w-3.5 h-3.5" strokeWidth={1.5} fill={editingNote?.isPinned ? 'currentColor' : 'none'} />
                   </motion.button>
                   <motion.button
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                     onClick={handleDeleteNote}
                     disabled={deleting}
-                    className="px-3 py-2 rounded-lg text-sm bg-red-600 text-white hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="px-3 py-1.5 rounded-full text-xs font-sans bg-terracotta text-white hover:bg-terracotta/90 transition-all duration-300 disabled:opacity-50 flex items-center gap-1.5"
                   >
-                    {deleting ? 'Deleting...' : 'Delete'}
+                    <Trash2 className="w-3.5 h-3.5" strokeWidth={1.5} />
+                    <span className="hidden sm:inline">{deleting ? 'Removing...' : 'Delete'}</span>
                   </motion.button>
                 </div>
               </div>
 
               {/* Editor Content */}
-              <div className="flex-1 flex flex-col gap-4 overflow-hidden">
+              <div className="flex-1 flex flex-col gap-5 overflow-hidden max-w-3xl mx-auto w-full">
                 {/* Folder Selector */}
-                <div className="flex items-center gap-2">
-                  <span className={`text-sm font-medium ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
-                    Folder:
+                <div className="flex items-center gap-3">
+                  <span className={`text-sm font-sans ${isDark ? 'text-[#8C9A84]' : 'text-[#8C9A84]'}`}>
+                    Path:
                   </span>
                   <select
                     value={editingNote?.folder || 'General'}
                     onChange={(e) => setEditingNote({ ...editingNote, folder: e.target.value })}
-                    className={`px-3 py-1 rounded-lg ${isDark ? 'bg-neutral-800 text-white' : 'bg-gray-100 text-gray-900'} outline-none cursor-pointer`}
+                    className={`px-4 py-2 rounded-full font-sans text-sm ${isDark ? 'bg-[#242B26] text-[#F9F8F4] border-[#E6E2DA]/20' : 'bg-[#DCCFC2]/30 text-[#2D3A31] border-[#E6E2DA]'} border outline-none cursor-pointer transition-colors`}
                   >
                     <option value="General">General</option>
                     {folders.map((folder) => (
@@ -1032,9 +996,9 @@ export default function NotesPage() {
                 </div>
 
                 {/* Tags Input */}
-                <div className="space-y-2">
-                  <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
-                    <span className={`text-sm font-medium ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+                <div className="space-y-3">
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+                    <span className={`text-sm font-sans ${isDark ? 'text-[#8C9A84]' : 'text-[#8C9A84]'}`}>
                       Tags:
                     </span>
                     <input
@@ -1063,7 +1027,7 @@ export default function NotesPage() {
                           }
                         }
                       }}
-                      className={`w-full sm:flex-1 min-w-[200px] px-3 py-2 rounded-lg ${isDark ? 'bg-neutral-800 text-white' : 'bg-gray-100 text-gray-900'} outline-none text-sm`}
+                      className={`flex-1 px-4 py-2 rounded-full font-sans text-sm ${isDark ? 'bg-[#242B26] text-[#F9F8F4] placeholder-[#8C9A84]/60 border-[#E6E2DA]/20' : 'bg-[#DCCFC2]/30 text-[#2D3A31] placeholder-[#8C9A84] border-[#E6E2DA]'} border outline-none transition-colors`}
                     />
                   </div>
                   
@@ -1076,8 +1040,11 @@ export default function NotesPage() {
                           initial={{ scale: 0.8, opacity: 0 }}
                           animate={{ scale: 1, opacity: 1 }}
                           exit={{ scale: 0.8, opacity: 0 }}
-                          className="flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium text-white"
-                          style={{ backgroundColor: getTagColor(tag) }}
+                          className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-sans"
+                          style={{ 
+                            backgroundColor: `${getTagColor(tag)}20`,
+                            color: getTagColor(tag)
+                          }}
                         >
                           <span>{tag}</span>
                           <button
@@ -1087,9 +1054,9 @@ export default function NotesPage() {
                                 tags: editingNote.tags.filter((_: string, i: number) => i !== idx),
                               });
                             }}
-                            className="hover:opacity-70 transition-opacity ml-1"
+                            className="hover:opacity-70 transition-opacity"
                           >
-                            ✕
+                            <X className="w-3 h-3" strokeWidth={2} />
                           </button>
                         </motion.div>
                       ))}
@@ -1102,7 +1069,7 @@ export default function NotesPage() {
                   type="text"
                   value={editingNote?.title || ''}
                   onChange={(e) => setEditingNote({ ...editingNote, title: e.target.value })}
-                  className={`text-4xl font-bold outline-none bg-transparent ${isDark ? 'text-white' : 'text-gray-900'}`}
+                  className={`text-4xl font-serif outline-none bg-transparent ${isDark ? 'text-[#F9F8F4] placeholder-stone/50' : 'text-[#2D3A31] placeholder-stone'}`}
                   placeholder="Note title..."
                 />
 
@@ -1110,11 +1077,11 @@ export default function NotesPage() {
                 <textarea
                   value={editingNote?.content || ''}
                   onChange={(e) => setEditingNote({ ...editingNote, content: e.target.value })}
-                  className={`flex-1 outline-none bg-transparent text-lg resize-none ${isDark ? 'text-gray-300' : 'text-gray-700'}`}
-                  placeholder="Start typing..."
+                  className={`flex-1 outline-none bg-transparent text-lg font-sans leading-relaxed resize-none ${isDark ? 'text-[#8C9A84]' : 'text-[#8C9A84]'} placeholder-[#8C9A84]/40`}
+                  placeholder="Start writing..."
                 />
               </div>
-            </div>
+            </motion.div>
           )}
         </main>
       </div>
