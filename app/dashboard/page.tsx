@@ -7,6 +7,7 @@ import { LogOut, User, BookOpen, Leaf } from 'lucide-react';
 import ThemeToggle from '../components/ThemeToggle';
 import BotanicalGradients from '../components/BotanicalGradients';
 import { useTheme } from '../components/ThemeProvider';
+import Logo from '../components/Logo';
 import { pageVariants, cardVariants, staggerContainer, buttonAnimation, transitions, cardAnimation } from '@/lib/animations';
 
 export default function DashboardPage() {
@@ -81,7 +82,10 @@ export default function DashboardPage() {
         className={`border-b ${isDark ? 'border-[#E6E2DA]/20' : 'border-[#E6E2DA]/50'}`}
       >
         <div className="max-w-5xl mx-auto px-6 py-4 flex justify-between items-center">
-          <div className={`font-serif text-xl ${isDark ? 'text-[#F9F8F4]' : 'text-[#2D3A31]'}`}>Dashboard</div>
+          <button onClick={() => router.push('/notes')} className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+            <Logo size={32} className={isDark ? 'text-[#F9F8F4]' : 'text-[#2D3A31]'} />
+            <span className={`font-serif text-xl ${isDark ? 'text-[#F9F8F4]' : 'text-[#2D3A31]'}`}>Jot</span>
+          </button>
           <motion.button
             {...buttonAnimation}
             onClick={handleLogout}

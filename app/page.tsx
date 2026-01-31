@@ -4,7 +4,7 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import ThemeToggle from "./components/ThemeToggle";
 import BotanicalGradients from "./components/BotanicalGradients";
-import { Sparkles } from "lucide-react";
+import Logo from "./components/Logo";
 import { pageVariants, buttonAnimation, transitions } from "@/lib/animations";
 
 export default function Home() {
@@ -24,16 +24,14 @@ export default function Home() {
         
         <div className="bg-white/80 dark:bg-[#242B26]/80 backdrop-blur-sm border border-[#E6E2DA] dark:border-[#4A5D4E]/30 rounded-3xl p-8 sm:p-12 shadow-paper">
           <div className="flex flex-col gap-8 text-center">
-            {/* Icon */}
+            {/* Logo */}
             <motion.div 
               className="mx-auto"
               initial={{ scale: 0.8, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               transition={{ delay: 0.15, ...transitions.normal }}
             >
-              <div className="w-16 h-16 rounded-full bg-[#8C9A84]/20 dark:bg-[#8C9A84]/10 flex items-center justify-center">
-                <Sparkles className="w-8 h-8 text-[#2D3A31] dark:text-[#8C9A84]" />
-              </div>
+              <Logo size={80} className="text-[#2D3A31] dark:text-[#F9F8F4]" />
             </motion.div>
             
             <div>
@@ -74,7 +72,6 @@ export default function Home() {
                 href="/signup"
                 className="inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-full font-sans font-medium bg-[#2D3A31] dark:bg-[#8C9A84] text-white dark:text-[#1A1F1C] hover:bg-[#4A5D4E] dark:hover:bg-[#8C9A84]/90 transition-all duration-300 shadow-soft hover:shadow-lift"
               >
-                <Sparkles className="w-4 h-4" />
                 Get Started
               </Link>
               <Link
