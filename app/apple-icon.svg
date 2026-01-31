@@ -1,0 +1,16 @@
+<svg width="180" height="180" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Outer circle -->
+  <circle cx="50" cy="50" r="45" stroke="#2D3A31" stroke-width="2" fill="#F9F8F4"/>
+  
+  <!-- Inner arch shape -->
+  <path d="M20 75 L20 45 Q20 20 50 20 Q80 20 80 45 L80 75" 
+        fill="none" stroke="#8C9A84" stroke-width="3" stroke-linecap="round"/>
+  
+  <!-- J letter -->
+  <text x="50" y="65" font-family="Georgia, serif" font-size="42" 
+        font-style="italic" font-weight="700" fill="#2D3A31" text-anchor="middle">J</text>
+  
+  <!-- Botanical accent -->
+  <path d="M35 80 Q40 75 45 80" stroke="#C27B66" stroke-width="2" stroke-linecap="round" fill="none"/>
+  <path d="M55 80 Q60 75 65 80" stroke="#C27B66" stroke-width="2" stroke-linecap="round" fill="none"/>
+</svg>

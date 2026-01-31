@@ -11,6 +11,7 @@ import {
 import { useUploadThing } from '@/lib/uploadthing-client';
 import BotanicalGradients from '../components/BotanicalGradients';
 import { useTheme } from '../components/ThemeProvider';
+import Logo from '../components/Logo';
 import {
   cardVariants,
   staggerContainer,
@@ -418,8 +419,9 @@ export default function FilesPage() {
             >
               <Menu className="w-5 h-5" strokeWidth={1.5} />
             </button>
-            <button onClick={() => router.push('/notes')} className={`font-serif text-2xl ${isDark ? 'text-[#F9F8F4]' : 'text-[#2D3A31]'} hover:opacity-80 transition-opacity`}>
-              Jot
+            <button onClick={() => router.push('/notes')} className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+              <Logo size={32} className={isDark ? 'text-[#F9F8F4]' : 'text-[#2D3A31]'} />
+              <span className={`font-serif text-xl ${isDark ? 'text-[#F9F8F4]' : 'text-[#2D3A31]'}`}>Jot</span>
             </button>
             <span className={`text-sm font-sans ${isDark ? 'text-[#8C9A84]' : 'text-[#8C9A84]'}`}>/ Files</span>
           </div>

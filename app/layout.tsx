@@ -19,6 +19,12 @@ const sourceSans = Source_Sans_3({
 export const metadata: Metadata = {
   title: "Jot - Digital Garden",
   description: "A warm, contemplative space for your thoughts",
+  icons: {
+    icon: [
+      { url: '/icon.svg', type: 'image/svg+xml' },
+    ],
+    apple: '/apple-icon.svg',
+  },
 };
 
 export default function RootLayout({
