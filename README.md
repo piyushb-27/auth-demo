@@ -2,6 +2,10 @@
 
 A full-featured note-taking and document management app built with Next.js and MongoDB. Jot offers real-time auto-saving, folder and tag organization, pinned notes, and powerful search capabilities. It also includes secure file uploads for images and documents, letting you store and manage all your content in one place.
 
+## 🌐 Live Demo
+
+**[Try Jot Live →](https://auth-demo-black.vercel.app/login)**
+
 ## ✨ Features
 
 ### 🔐 Authentication
